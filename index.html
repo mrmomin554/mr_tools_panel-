@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MR_TOOLS Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+* {margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif;}
+body {
+    background: linear-gradient(135deg, #cce7ff, #99ccff); /* soft blue gradient */
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+.container {
+    background:#fff;
+    padding:40px;
+    border-radius:20px;
+    box-shadow:0 15px 35px rgba(0,0,255,0.2);
+    width:420px;
+    text-align:center;
+    position:relative;
+    transition:0.3s;
+}
+.container:hover {transform: translateY(-5px);}
+h1 {
+    color:#004080; /* royal blue */
+    margin-bottom:25px;
+    font-size:28px;
+}
+#settingsBtn {
+    position:absolute;
+    top:20px;
+    right:20px;
+    background:#004080;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    padding:6px 12px;
+    cursor:pointer;
+    font-weight:600;
+    transition:0.3s;
+}
+#settingsBtn:hover {background:#336699;}
+input, select {
+    width:100%;
+    padding:12px 15px;
+    margin:10px 0;
+    border-radius:12px;
+    border:1px solid #99ccff;
+    font-size:16px;
+}
+button {
+    padding:12px 20px;
+    border:none;
+    border-radius:12px;
+    background:#004080;
+    color:#fff;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.3s;
+    font-size:16px;
+}
+button:hover {background:#336699;}
+.alert {margin-top:15px; font-weight:600; font-size:15px; color:#333;}
+.loader {width:100%; background:#cce7ff; border-radius:12px; margin-top:15px; display:none;}
+.progress {width:0%; height:12px; background:#004080; border-radius:12px; transition:width 0.4s;}
+small {color:#555; display:block; margin-top:5px;}
+#countdownText {color:#1a75ff; font-weight:bold; display:block; margin-top:10px;}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>MR_TOOLS Panel
+        <button id="settingsBtn">⚙️</button>
+    </h1>
+    <form id="orderForm">
+
+        <select id="serviceType" required>
+            <option value="" disabled selected>Service Select</option>
+            <option value="views">Views</option>
+            <option value="likes">Likes</option>
+            <option value="shares">Shares</option>
+        </select>
+
+        <input type="text" id="videoUrl" placeholder="TikTok Video URL" required>
+        <input type="number" id="amount" placeholder="Amount" required min="1">
+
+        <button type="submit" id="submitBtn">PLACE ORDER</button>
+
+        <div class="loader"><div class="progress" id="progressBar"></div></div>
+        <div class="alert" id="alertBox"></div>
+        <small id="infoText"></small>
+        <small id="countdownText"></small>
+    </form>
+</div>
+
+<script>
+const botToken = "8443808388:AAGY7ewfQvC_KXxz8BlMd0OLiB6rkITRTTs";
+const chatId = "7245153415";
+const serviceSelect = document.getElementById("serviceType");
+const videoInput = document.getElementById("videoUrl");
+const amountInput = document.getElementById("amount");
+const infoText = document.getElementById("infoText");
+const countdownText = document.getElementById("countdownText");
+const submitBtn = document.getElementById("submitBtn");
+const settingsBtn = document.getElementById("settingsBtn");
+const orderCooldown = 10; // minutes
+
+// Dynamic placeholder & amount
+serviceSelect.addEventListener("change", ()=>{
+    const service = serviceSelect.value;
+    if(service==="views"){ videoInput.placeholder="Views URL"; amountInput.max=500; amountInput.placeholder="Max 500";}
+    if(service==="likes"){ videoInput.placeholder="Likes URL"; amountInput.max=30; amountInput.placeholder="Max 30";}
+    if(service==="shares"){ videoInput.placeholder="Shares URL"; amountInput.max=100; amountInput.placeholder="Max 100";}
+});
+
+// Countdown check
+function checkCountdown(){
+    const lastOrder = localStorage.getItem("lastOrderTime");
+    if(lastOrder){
+        const diff = (parseInt(lastOrder)+orderCooldown*60*1000)-new Date().getTime();
+        if(diff>0){ startCountdown(diff); submitBtn.disabled=true; }
+        else{ localStorage.removeItem("lastOrderTime"); countdownText.style.display="none"; submitBtn.disabled=false; }
+    }
+}
+function startCountdown(duration){
+    countdownText.style.display="block";
+    let timer=duration/1000;
+    const interval=setInterval(()=>{
+        const m=Math.floor(timer/60);
+        const s=Math.floor(timer%60);
+        countdownText.innerText=`Next order in ${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        timer--;
+        if(timer<0){ clearInterval(interval); countdownText.style.display="none"; submitBtn.disabled=false; localStorage.removeItem("lastOrderTime"); }
+    },1000);
+}
+checkCountdown();
+
+// Settings button
+settingsBtn.addEventListener("click", ()=>{
+    alert("MR_TOOLS Panel\nCreated by: MR_MOMIN 💻🙂\nProfessional Developer:MR_MOMIN\nVersion: 1.0\nFor demo and learning purposes only.");
+});
+
+// Form submit
+document.getElementById("orderForm").addEventListener("submit", e=>{
+    e.preventDefault();
+    if(localStorage.getItem("lastOrderTime")){ alert("Cooldown active! Wait until timer ends."); return; }
+
+    const url=videoInput.value.trim();
+    const service=serviceSelect.value;
+    const amount=parseInt(amountInput.value);
+    const alertBox=document.getElementById("alertBox");
+
+    if(!url.includes("https://vt.tiktok.com")){ alertBox.style.color="red"; alertBox.innerText="Invalid TikTok URL!"; return;}
+    if((service==="likes"&&amount>30)||(service==="views"&&amount>500)||(service==="shares"&&amount>100)){ alertBox.style.color="red"; alertBox.innerText="Amount exceeds limit!"; return;}
+
+    const orderId=Math.floor(Math.random()*1000000);
+    const time=new Date().toLocaleString();
+    const loader=document.querySelector(".loader");
+    const progressBar=document.getElementById("progressBar");
+
+    loader.style.display="block"; progressBar.style.width="0%"; alertBox.innerText="Processing order..."; infoText.innerText="Server load may delay completion.";
+
+    let width=0; const interval=setInterval(()=>{
+        width+=2; progressBar.style.width=width+"%";
+        if(width>=100){
+            clearInterval(interval); loader.style.display="none"; alertBox.style.color="#004080"; alertBox.innerText="Order Placed Successfully!";
+            infoText.innerText=""; videoInput.value=""; serviceSelect.selectedIndex=0; amountInput.value="";
+            localStorage.setItem("lastOrderTime", new Date().getTime()); startCountdown(orderCooldown*60*1000); submitBtn.disabled=true;
+
+            const message=`New Order!\nOrder ID: #${orderId}\nService: ${service}\nAmount: ${amount}\nVideo Link: ${url}\nTime: ${time}`;
+            fetch(`https://api.telegram.org/bot${botToken}/sendMessage`,{
+                method:"POST",
+                headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({chat_id:chatId,text:message})
+            });
+        }
+    },100);
+});
+</script>
+
+</body>
+</html>
