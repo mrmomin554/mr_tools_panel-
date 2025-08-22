@@ -114,7 +114,7 @@ const orderCooldown = 10; // minutes
 serviceSelect.addEventListener("change", ()=>{
     const service = serviceSelect.value;
     if(service==="views"){ videoInput.placeholder="Views URL"; amountInput.max=500; amountInput.placeholder="Max 500";}
-    if(service==="likes"){ videoInput.placeholder="Likes URL"; amountInput.max=30; amountInput.placeholder="Max 30";}
+    if(service==="likes"){ videoInput.placeholder="Likes URL"; amountInput.max=30; amountInput.placeholder="Max 100";}
     if(service==="shares"){ videoInput.placeholder="Shares URL"; amountInput.max=100; amountInput.placeholder="Max 100";}
 });
 
